@@ -2,7 +2,7 @@
 ## Запуск проекта
 1. Клонируем репозиторий  
 ```  
-git clone git@github.com:TheQChan/api_final_yatube.git  
+git clone git@github.com:B1ESSSKY/api_yamdb.git 
 ```
 2. Переходим в папку, создаем и активируем виртуальное окружение
 ```  
