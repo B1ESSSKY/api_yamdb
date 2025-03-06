@@ -30,7 +30,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(
         methods=['get', 'patch'],
-        detail=True,
+        detail=False,
         url_path='me',
         permission_classes=(IsAuthenticated,)
     )
