@@ -30,10 +30,10 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(
+    genre = serializers.SlugRelatedField(
         many=True, queryset=Genre.objects.all(), slug_field='slug'
     )
-    category = CategorySerializer(
+    category = serializers.SlugRelatedField(
         queryset=Category.objects.all(), slug_field='slug', required=True
     )
 
