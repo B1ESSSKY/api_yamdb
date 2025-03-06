@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from reviews.models import Review
 from reviews.models import Title, Category, Genre
 
 
@@ -40,3 +40,14 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Title
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для отзывов."""
+    author = serializers.ReadOnlyField(source='author.username')
+    title = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'score', 'author', 'pub_date', 'title')
+        read_only_fields = ('id', 'author', 'pub_date', 'title')
