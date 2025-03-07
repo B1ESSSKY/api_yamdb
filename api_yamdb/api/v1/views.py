@@ -11,6 +11,7 @@ from .serializers import (
     CategorySerializer,
     GenreSerializer,
     ReviewSerializer,
+    CommentSerializer,
 )
 
 
@@ -75,3 +76,21 @@ class ReviewViewSet(viewsets.ModelViewSet):
             )
 
         serializer.save(author=self.request.user, title=title)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """ViewSet для комментариев."""
+    serializer_class = CommentSerializer
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+
+    def get_queryset(self):
+        """Получение queryset для комментариев конкретного отзыва."""
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        """Сохранение комментария с автором и отзывом."""
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        serializer.save(author=self.request.user, review=review)
