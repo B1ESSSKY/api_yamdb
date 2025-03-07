@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.exceptions import ValidationError
 
 from users.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from users.validators import validate_username
@@ -10,7 +10,8 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для существующего пользователя."""
+    """Сериализатор для пользователя."""
+
     class Meta:
         model = User
         fields = (
@@ -32,14 +33,23 @@ class UserCreationSerializer(serializers.Serializer):
         max_length=MAX_EMAIL_LENGTH
     )
 
-    class Meta:
-        validators = [
-            UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=('username', 'email'),
-                message='Такой пользователь уже существует.'
+    def validate(self, data):
+        email = data.get('email')
+        username = data.get('username')
+
+        if User.objects.filter(email=email, username=username).exists():
+            return data
+
+        if User.objects.filter(email=email).exists():
+            return ValidationError(
+                'Пользователь с таким Email уже существует'
             )
-        ]
+
+        if User.objects.filter(username=username).exists():
+            return ValidationError(
+                'Пользователь с таким ником уже существует'
+            )
+        return data
 
 
 class TokenSerializer(serializers.Serializer):
