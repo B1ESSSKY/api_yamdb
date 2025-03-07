@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins, filters
+from rest_framework import viewsets, mixins, filters, permissions
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from .permissions import IsAdminModeratorAuthorOrReadOnly
@@ -57,7 +57,9 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet для отзывов."""
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+    http_method_names = ('get', 'post', 'patch', 'delete')
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+                          IsAdminModeratorAuthorOrReadOnly]
 
     def get_queryset(self):
         """Получение queryset для отзывов конкретного произведения."""
@@ -81,7 +83,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet для комментариев."""
     serializer_class = CommentSerializer
-    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+    http_method_names = ('get', 'post', 'patch', 'delete')
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+                          IsAdminModeratorAuthorOrReadOnly]
 
     def get_queryset(self):
         """Получение queryset для комментариев конкретного отзыва."""
