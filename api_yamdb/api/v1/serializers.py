@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from reviews.models import Title, Category, Genre
+from reviews.models import Title, Category, Genre, Review, Comment
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -26,7 +26,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         # Вычисление рэйтинга
-        return 0
+        return obj.rating
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
@@ -40,3 +40,25 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = "__all__"
         model = Title
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для отзывов."""
+    author = serializers.ReadOnlyField(source='author.username')
+    title = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'score', 'author', 'pub_date', 'title')
+        read_only_fields = ('id', 'author', 'pub_date', 'title')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор для комментариев."""
+    author = serializers.ReadOnlyField(source='author.username')
+    review = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date', 'review')
+        read_only_fields = ('id', 'author', 'pub_date', 'review')

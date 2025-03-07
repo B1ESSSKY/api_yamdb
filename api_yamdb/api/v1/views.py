@@ -2,13 +2,17 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.exceptions import ValidationError
 
-from reviews.models import Title, Category, Genre
+from .permissions import IsAdminModeratorAuthorOrReadOnly
+from reviews.models import Title, Category, Genre, Review
 from .serializers import (
     TitleReadSerializer,
     TitleWriteSerializer,
     CategorySerializer,
     GenreSerializer,
+    ReviewSerializer,
+    CommentSerializer
 )
 
 
@@ -49,3 +53,45 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ["create", "partial_update"]:
             return TitleWriteSerializer
         return TitleReadSerializer
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    """ViewSet для отзывов."""
+    serializer_class = ReviewSerializer
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+
+    def get_queryset(self):
+        """Получение queryset для отзывов конкретного произведения."""
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        """Сохранение отзыва с автором и произведением."""
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        if Review.objects.filter(author=self.request.user,
+                                 title=title).exists():
+            raise ValidationError(
+                "Вы уже оставили отзыв к этому произведению."
+            )
+
+        serializer.save(author=self.request.user, title=title)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """ViewSet для комментариев."""
+    serializer_class = CommentSerializer
+    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+
+    def get_queryset(self):
+        """Получение queryset для комментариев конкретного отзыва."""
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        """Сохранение комментария с автором и отзывом."""
+        review_id = self.kwargs.get('review_id')
+        review = get_object_or_404(Review, id=review_id)
+        serializer.save(author=self.request.user, review=review)
