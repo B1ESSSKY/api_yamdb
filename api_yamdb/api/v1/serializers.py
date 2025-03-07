@@ -24,10 +24,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
         fields = "__all__"
         model = Title
 
-    def get_rating(self, obj):
-        # Вычисление рэйтинга
-        return 0
-
 
 class TitleWriteSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
