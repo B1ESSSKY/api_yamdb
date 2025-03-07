@@ -24,7 +24,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
         model = Title
 
     def get_rating(self, obj):
-        # Вычисление рэйтинга
         return obj.rating
 
 
