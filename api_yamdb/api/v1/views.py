@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, mixins, filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -43,7 +44,7 @@ class GenreViewSet(GenreCategoryViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ("category", "genre", "name", "year")
     pagination_class = PageNumberPagination
@@ -58,6 +59,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet для отзывов."""
     serializer_class = ReviewSerializer
+    http_method_names = ('get', 'post', 'patch', 'delete')
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
@@ -82,6 +84,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet для комментариев."""
     serializer_class = CommentSerializer
+    http_method_names = ('get', 'post', 'patch', 'delete')
     permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
 
     def get_queryset(self):
