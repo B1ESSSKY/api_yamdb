@@ -18,14 +18,14 @@ class BaseModel(models.Model):
 
 class Genre(BaseModel):
     class Meta:
-        verbose_name = "Жанр"
-        verbose_name_plural = "Жанры"
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
 
 class Category(BaseModel):
     class Meta:
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
 
 class Title(models.Model):
@@ -41,8 +41,8 @@ class Title(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = "Произведение"
-        verbose_name_plural = "Произведения"
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
 
 class Review(models.Model):
@@ -57,14 +57,12 @@ class Review(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='reviews',
         verbose_name='Автор отзыва'
     )
     title = models.ForeignKey(
         'Title',
         on_delete=models.CASCADE,
         db_index=True,
-        related_name='reviews',
         verbose_name='Произведение'
     )
     pub_date = models.DateTimeField(
@@ -81,6 +79,7 @@ class Review(models.Model):
                 name='unique_review'
             )
         ]
+        default_related_name = 'reviews'
 
     def __str__(self):
         return self.text[:15]
@@ -94,13 +93,11 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name='Автор комментария'
     )
     review = models.ForeignKey(
         'Review',
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name='Отзыв'
     )
     pub_date = models.DateTimeField(
@@ -111,6 +108,7 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
+        default_related_name = 'comments'
 
     def __str__(self):
         return self.text[:15]

@@ -26,12 +26,12 @@ class GenreCategoryViewSet(
     viewsets.GenericViewSet,
 ):
     filter_backends = (filters.SearchFilter,)
-    search_fields = ("name",)
+    search_fields = ('name',)
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnly,)
 
     def get_object(self):
-        slug = self.kwargs.get("pk")
+        slug = self.kwargs.get('pk')
         obj = get_object_or_404(self.get_queryset(), slug=slug)
         return obj
 
@@ -55,7 +55,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.action in ["create", "partial_update"]:
+        if self.action in ['create', 'partial_update']:
             return TitleWriteSerializer
         return TitleReadSerializer
 
@@ -79,7 +79,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         if Review.objects.filter(author=self.request.user,
                                  title=title).exists():
             raise ValidationError(
-                "Вы уже оставили отзыв к этому произведению."
+                'Вы уже оставили отзыв к этому произведению.'
             )
 
         serializer.save(author=self.request.user, title=title)

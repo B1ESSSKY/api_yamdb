@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from users.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from users.validators import validate_username
@@ -41,12 +40,12 @@ class UserCreationSerializer(serializers.Serializer):
             return data
 
         if User.objects.filter(email=email).exists():
-            return ValidationError(
+            raise serializers.ValidationError(
                 'Пользователь с таким Email уже существует'
             )
 
         if User.objects.filter(username=username).exists():
-            return ValidationError(
+            raise serializers.ValidationError(
                 'Пользователь с таким ником уже существует'
             )
         return data

@@ -5,13 +5,13 @@ from reviews.models import Title, Category, Genre, Review, Comment
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("name", "slug")
+        fields = ('name', 'slug')
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("name", "slug")
+        fields = ('name', 'slug')
         model = Genre
 
 
@@ -21,7 +21,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        fields = "__all__"
+        fields = '__all__'
         model = Title
 
     def get_rating(self, obj):
@@ -38,7 +38,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = "__all__"
+        fields = '__all__'
         model = Title
 
 
