@@ -1,34 +1,42 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 User = get_user_model()
 
 
 class BaseModel(models.Model):
+    """Базовая модель для категории и жанров."""
+
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         abstract = True
 
+    def __str__(self):
+        return self.name
+
 
 class Genre(BaseModel):
+    """Модель жанров."""
+
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
 
 class Category(BaseModel):
+    """Модель категорий."""
+
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Title(models.Model):
+    """Модель произведений."""
+
     name = models.CharField(max_length=255)
     year = models.IntegerField()
     description = models.TextField(blank=True)
@@ -37,16 +45,17 @@ class Title(models.Model):
         Category, on_delete=models.SET_NULL, null=True
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
+    def __str__(self):
+        return self.name
+
 
 class Review(models.Model):
     """Модель отзыва."""
+
     text = models.TextField(
         verbose_name='Текст отзыва',
     )
@@ -87,6 +96,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     """Модель комментария к отзыву."""
+
     text = models.TextField(
         verbose_name='Текст комментария',
     )

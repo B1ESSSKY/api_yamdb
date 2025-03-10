@@ -1,22 +1,21 @@
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, mixins, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters, mixins, viewsets
 from rest_framework.exceptions import ValidationError
-from django.db.models import Avg
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .permissions import IsAdminModeratorAuthorOrReadOnly, IsAdminOrReadOnly
-from .filters import TitleFilter
-from reviews.models import Title, Category, Genre, Review
-from .serializers import (
-    TitleReadSerializer,
-    TitleWriteSerializer,
-    CategorySerializer,
-    GenreSerializer,
-    ReviewSerializer,
-    CommentSerializer
+from api.v1.filters import TitleFilter
+from api.v1.permissions import (
+    IsAdminModeratorAuthorOrReadOnly,
+    IsAdminOrReadOnly
 )
+from api.v1.serializers import (
+    CategorySerializer, CommentSerializer, GenreSerializer, ReviewSerializer,
+    TitleReadSerializer, TitleWriteSerializer
+)
+from reviews.models import Category, Genre, Review, Title
 
 
 class GenreCategoryViewSet(
@@ -25,6 +24,8 @@ class GenreCategoryViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
+    """Общий вьюсет для жанров и категорий."""
+
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = PageNumberPagination
@@ -37,16 +38,22 @@ class GenreCategoryViewSet(
 
 
 class CategoryViewSet(GenreCategoryViewSet):
+    """Вьюсет для категорий."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class GenreViewSet(GenreCategoryViewSet):
+    """Вьюсет для жанров."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет для произведений."""
+
     queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -61,10 +68,13 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    """ViewSet для отзывов."""
+    """Вьюсет для отзывов."""
+
     serializer_class = ReviewSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
-    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+    permission_classes = (
+        IsAdminModeratorAuthorOrReadOnly, IsAuthenticatedOrReadOnly
+    )
 
     def get_queryset(self):
         """Получение queryset для отзывов конкретного произведения."""
@@ -76,8 +86,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
         """Сохранение отзыва с автором и произведением."""
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, id=title_id)
-        if Review.objects.filter(author=self.request.user,
-                                 title=title).exists():
+        if Review.objects.filter(
+            author=self.request.user,
+            title=title
+        ).exists():
             raise ValidationError(
                 'Вы уже оставили отзыв к этому произведению.'
             )
@@ -86,10 +98,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    """ViewSet для комментариев."""
+    """Вьюсет для комментариев."""
+
     serializer_class = CommentSerializer
     http_method_names = ('get', 'post', 'patch', 'delete')
-    permission_classes = (IsAdminModeratorAuthorOrReadOnly,)
+    permission_classes = (
+        IsAdminModeratorAuthorOrReadOnly, IsAuthenticatedOrReadOnly
+    )
 
     def get_queryset(self):
         """Получение queryset для комментариев конкретного отзыва."""

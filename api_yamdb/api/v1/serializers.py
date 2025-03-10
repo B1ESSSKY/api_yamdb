@@ -1,21 +1,27 @@
 from rest_framework import serializers
 
-from reviews.models import Title, Category, Genre, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериалиизатор для категорий."""
+
     class Meta:
         fields = ('name', 'slug')
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор для жанров."""
+
     class Meta:
         fields = ('name', 'slug')
         model = Genre
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
+    """Сериализатор для чтения произведений."""
+
     genre = GenreSerializer(many=True)
     category = CategorySerializer(read_only=True)
     rating = serializers.SerializerMethodField(read_only=True)
@@ -30,6 +36,8 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
+    """Сериализатор для записи произведений."""
+
     genre = serializers.SlugRelatedField(
         many=True, queryset=Genre.objects.all(), slug_field='slug'
     )
@@ -44,6 +52,7 @@ class TitleWriteSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для отзывов."""
+
     author = serializers.ReadOnlyField(source='author.username')
     title = serializers.PrimaryKeyRelatedField(read_only=True)
 
@@ -55,6 +64,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев."""
+
     author = serializers.ReadOnlyField(source='author.username')
     review = serializers.PrimaryKeyRelatedField(read_only=True)
 
