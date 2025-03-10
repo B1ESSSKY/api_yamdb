@@ -8,8 +8,8 @@ User = get_user_model()
 class BaseModel(models.Model):
     """Базовая модель для категории и жанров."""
 
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    name = models.CharField(verbose_name='Название', max_length=255)
+    slug = models.SlugField(verbose_name='Слаг', unique=True)
 
     class Meta:
         abstract = True
@@ -37,12 +37,15 @@ class Category(BaseModel):
 class Title(models.Model):
     """Модель произведений."""
 
-    name = models.CharField(max_length=255)
-    year = models.IntegerField()
-    description = models.TextField(blank=True)
-    genre = models.ManyToManyField(Genre)
+    name = models.CharField(verbose_name='Название', max_length=255)
+    year = models.IntegerField(verbose_name='Год создания')
+    description = models.TextField(verbose_name='Описание', blank=True)
+    genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True
+        Category,
+        verbose_name='Категория',
+        on_delete=models.SET_NULL,
+        null=True
     )
 
     class Meta:
