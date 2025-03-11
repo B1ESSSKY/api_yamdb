@@ -50,7 +50,9 @@ class GenreViewSet(GenreCategoryViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений."""
 
-    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).order_by('name')
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
