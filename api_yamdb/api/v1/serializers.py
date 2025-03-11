@@ -24,22 +24,22 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer(read_only=True)
-    rating = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         fields = '__all__'
         model = Title
-
-    def get_rating(self, obj):
-        # Вычисление рэйтинга
-        return obj.rating
 
 
 class TitleWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для записи произведений."""
 
     genre = serializers.SlugRelatedField(
-        many=True, queryset=Genre.objects.all(), slug_field='slug'
+        many=True,
+        queryset=Genre.objects.all(),
+        slug_field='slug',
+        allow_null=False,
+        allow_empty=False
     )
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(), slug_field='slug', required=True
@@ -48,6 +48,9 @@ class TitleWriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Title
+
+    def to_representation(self, instance):
+        return TitleReadSerializer(instance).data
 
 
 class ReviewSerializer(serializers.ModelSerializer):

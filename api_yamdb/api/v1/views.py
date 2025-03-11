@@ -30,11 +30,7 @@ class GenreCategoryViewSet(
     search_fields = ('name',)
     pagination_class = PageNumberPagination
     permission_classes = (IsAdminOrReadOnly,)
-
-    def get_object(self):
-        slug = self.kwargs.get('pk')
-        obj = get_object_or_404(self.get_queryset(), slug=slug)
-        return obj
+    lookup_field = 'slug'
 
 
 class CategoryViewSet(GenreCategoryViewSet):
@@ -54,12 +50,15 @@ class GenreViewSet(GenreCategoryViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений."""
 
-    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')
+    ).order_by('name')
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
     http_method_names = ('get', 'post', 'patch', 'delete')
     permission_classes = (IsAdminOrReadOnly,)
+    ordering_fields = ('id', 'name', 'year')
 
     def get_serializer_class(self):
         if self.action in ['create', 'partial_update']:
