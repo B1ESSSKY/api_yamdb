@@ -30,19 +30,7 @@ class Command(BaseCommand):
                     csv_file_path, newline='', encoding='utf-8'
                 ) as csv_file:
                     csv_data = csv.DictReader(csv_file)
-                    objs = []
-                    for row_number, row in enumerate(csv_data, start=1):
-                        for field in FOREIGN_KEY_FIELDS:
-                            if field in row:
-                                row[f'{field}_id'] = row[field]
-                                del row[field]
-                        objs.append(model(**row))
-                    model.objects.bulk_create(objs, ignore_conflicts=True)
-                    self.stdout.write(
-                        self.style.SUCCESS(
-                            f'Данные модели {model.__name__} успешно загружены'
-                        )
-                    )
+                    csv_serializer(csv_data, model, self)
             except Exception as e:
                 self.stdout.write(
                     self.style.ERROR(
@@ -73,3 +61,19 @@ def load_title_genre(self):
         self.stdout.write(
             self.style.ERROR(f'Ошибка связывания Title и Genre: {e}')
         )
+
+
+def csv_serializer(csv_data, model, self):
+    objs = []
+    for row_number, row in enumerate(csv_data, start=1):
+        for field in FOREIGN_KEY_FIELDS:
+            if field in row:
+                row[f'{field}_id'] = row[field]
+                del row[field]
+        objs.append(model(**row))
+    model.objects.bulk_create(objs, ignore_conflicts=True)
+    self.stdout.write(
+        self.style.SUCCESS(
+            f'Данные модели {model.__name__} успешно загружены'
+        )
+    )

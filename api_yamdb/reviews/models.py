@@ -1,35 +1,42 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
+
+from users.constants import MAX_NAME_LENGTH, MIN_YEAR
 
 User = get_user_model()
 
 
-class BaseModel(models.Model):
+class NameSlugModel(models.Model):
     """Базовая модель для категории и жанров."""
 
-    name = models.CharField(verbose_name='Название', max_length=255)
+    name = models.CharField(
+        max_length=MAX_NAME_LENGTH,
+        verbose_name='Наименование'
+    )
     slug = models.SlugField(verbose_name='Слаг', unique=True)
 
     class Meta:
         abstract = True
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
 
 
-class Genre(BaseModel):
+class Genre(NameSlugModel):
     """Модель жанров."""
 
-    class Meta:
+    class Meta(NameSlugModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
 
-class Category(BaseModel):
+class Category(NameSlugModel):
     """Модель категорий."""
 
-    class Meta:
+    class Meta(NameSlugModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -37,20 +44,31 @@ class Category(BaseModel):
 class Title(models.Model):
     """Модель произведений."""
 
-    name = models.CharField(verbose_name='Название', max_length=255)
-    year = models.IntegerField(verbose_name='Год создания')
+    name = models.CharField(
+        verbose_name='Название', max_length=MAX_NAME_LENGTH
+    )
+    year = models.SmallIntegerField(
+        verbose_name='Год создания',
+        validators=(
+            MinValueValidator(MIN_YEAR),
+            MaxValueValidator(timezone.now().year)
+        )
+    )
     description = models.TextField(verbose_name='Описание', blank=True)
-    genre = models.ManyToManyField(Genre, verbose_name='Жанр')
+    genre = models.ManyToManyField(
+        Genre, verbose_name='Жанр'
+    )
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
     )
 
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+        default_related_name = 'titles'
 
     def __str__(self):
         return self.name
