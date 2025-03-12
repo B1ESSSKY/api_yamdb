@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.v1.permissions import IsAdminOrSuperUser
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from users.serializers import (
     TokenSerializer, UserCreationSerializer,
     UserSerializer
@@ -20,6 +21,8 @@ User = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с пользователями."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -48,11 +51,13 @@ class UserViewSet(viewsets.ModelViewSet):
             partial=True
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(role=request.user.role)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserSignUp(APIView):
+    """Класс для регистрации пользователей."""
+
     permission_classes = (AllowAny,)
 
     @staticmethod
@@ -60,15 +65,15 @@ class UserSignUp(APIView):
         email = EmailMessage(
             subject=message_data['subject'],
             body=message_data['body'],
-            from_email='admin@yamdb.ru',
+            from_email=DEFAULT_FROM_EMAIL,
             to=[message_data['to_email']]
         )
         email.send()
-
     def post(self, request):
         serializer = UserCreationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user, _ = User.objects.get_or_create(**serializer.validated_data)
+        serializer.save()
+        user = User.objects.get(**serializer.validated_data)
         confirmation_code = default_token_generator.make_token(user)
         data = {
             'subject': 'Код подтверждения',
@@ -80,23 +85,10 @@ class UserSignUp(APIView):
 
 
 class GetToken(APIView):
+    """Класс для получения токена."""
+
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-        try:
-            user = User.objects.get(username=data['username'])
-        except User.DoesNotExist:
-            return Response(
-                {'username': 'Такого пользователя не существует'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        if default_token_generator.check_token(
-            user, data['confirmation_code']
-        ):
-            token = RefreshToken.for_user(user).access_token
-            return Response({'token': str(token)}, status=status.HTTP_200_OK)
-        return Response(
-            {'confirmation_code': 'Неверный код подтверждения'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        token = RefreshToken.for_user(request.user).access_token
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)

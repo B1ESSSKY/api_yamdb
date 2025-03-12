@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from users.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
@@ -17,13 +19,10 @@ class UserSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
 
-    def update(self, instance, validated_data):
-        validated_data.pop('role', None)
-        return super().update(instance, validated_data)
-
 
 class UserCreationSerializer(serializers.Serializer):
     """Сериализатор для создания нового пользователя."""
+
     username = serializers.CharField(
         max_length=MAX_USERNAME_LENGTH,
         validators=[UnicodeUsernameValidator(), validate_username]
@@ -50,6 +49,12 @@ class UserCreationSerializer(serializers.Serializer):
             )
         return data
 
+    def create(self, validated_data):
+        username = validated_data['username']
+        email = validated_data['email']
+        user, _ = User.objects.get_or_create(username=username, email=email)
+        return user
+
 
 class TokenSerializer(serializers.Serializer):
     """Сериализатор для получения токена."""
@@ -58,3 +63,16 @@ class TokenSerializer(serializers.Serializer):
         validators=[UnicodeUsernameValidator(), validate_username]
     )
     confirmation_code = serializers.CharField()
+
+    def validate(self, data):
+        user = get_object_or_404(User, username=data['username'])
+        if not user:
+            raise serializers.ValidationError(
+                'Такого пользователя не существует'
+            )
+        if not default_token_generator.check_token(
+            user,
+            data['confirmation_code']
+        ):
+            raise serializers.ValidationError('Неверный код')
+        return data

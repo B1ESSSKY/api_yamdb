@@ -3,8 +3,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
 from users.constants import (
-    MAX_EMAIL_LENGTH, MAX_ROLE_LENGTH,
-    MAX_USERNAME_LENGTH
+    MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 )
 from users.validators import validate_username
 
@@ -17,8 +16,9 @@ class UserRole(models.TextChoices):
     USER = 'user', 'Пользователь'
 
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     """Кастомная модель пользователя."""
+
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=MAX_USERNAME_LENGTH,
@@ -32,19 +32,22 @@ class CustomUser(AbstractUser):
     )
     role = models.CharField(
         verbose_name='Роль',
-        max_length=MAX_ROLE_LENGTH,
+        max_length=max(
+            [len(role_name) for role_name in dir(UserRole) if
+             not role_name.startswith('__')]
+        ),
         choices=UserRole.choices,
         default=UserRole.USER
     )
     bio = models.TextField(
         verbose_name='Биография',
         blank=True,
-        default=''
     )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
 
     def __str__(self):
         return f'{self.username} - {self.role}'
