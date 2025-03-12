@@ -69,6 +69,7 @@ class UserSignUp(APIView):
             to=[message_data['to_email']]
         )
         email.send()
+
     def post(self, request):
         serializer = UserCreationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
