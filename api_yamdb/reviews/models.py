@@ -4,10 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from users.constants import (
-    MAX_NAME_LENGTH,
-    MIN_YEAR, MIN_SCORE,
-    MAX_SCORE,
-    TEXT_PREVIEW_LENGTH
+    MAX_NAME_LENGTH, MAX_SCORE, MIN_SCORE, MIN_YEAR, TEXT_PREVIEW_LENGTH
 )
 
 User = get_user_model()
@@ -36,7 +33,6 @@ class Genre(NameSlugModel):
     class Meta(NameSlugModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ('name',)
 
 
 class Category(NameSlugModel):
@@ -45,7 +41,6 @@ class Category(NameSlugModel):
     class Meta(NameSlugModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ('name',)
 
 
 class Title(models.Model):

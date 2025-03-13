@@ -66,10 +66,6 @@ class TokenSerializer(serializers.Serializer):
 
     def validate(self, data):
         user = get_object_or_404(User, username=data['username'])
-        if not user:
-            raise serializers.ValidationError(
-                'Такого пользователя не существует'
-            )
         if not default_token_generator.check_token(
             user,
             data['confirmation_code']
