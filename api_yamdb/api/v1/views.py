@@ -102,7 +102,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_review(self):
         """Получаем отзыв для комментария."""
         review_id = self.kwargs.get('review_id')
-        return get_object_or_404(Review, id=review_id)
+        title_id = self.kwargs.get('title_id')
+        return get_object_or_404(Review, id=review_id, title__id=title_id)
 
     def get_queryset(self):
         """Получение queryset для комментариев конкретного отзыва."""
