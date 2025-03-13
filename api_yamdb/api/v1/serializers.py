@@ -24,7 +24,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer(read_only=True)
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(read_only=True, default=0)
 
     class Meta:
         fields = '__all__'
@@ -57,22 +57,19 @@ class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для отзывов."""
 
     author = serializers.ReadOnlyField(source='author.username')
-    title = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Review
-        fields = ('id', 'text', 'author', 'score', 'pub_date', 'title')
-        read_only_fields = ('id', 'author', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
 
     def validate(self, attrs):
         request = self.context['request']
-        if request.method == 'POST':
-            if Review.objects.filter(
-                    author=self.context['request'].user,
-                    title=self.context['request'].parser_context['kwargs']
-                    ['title_id']
-            ).exists():
-                raise serializers.ValidationError('Отзыв уже оставлен')
+        if request.method == 'POST' and Review.objects.filter(
+                author=self.context['request'].user,
+                title=self.context['request'].parser_context['kwargs']
+                ['title_id']
+        ).exists():
+            raise serializers.ValidationError('Отзыв уже оставлен')
         return attrs
 
 
@@ -80,9 +77,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев."""
 
     author = serializers.ReadOnlyField(source='author.username')
-    review = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'author', 'pub_date', 'review')
-        read_only_fields = ('id', 'author', 'pub_date')
+        fields = ('id', 'text', 'author', 'pub_date')

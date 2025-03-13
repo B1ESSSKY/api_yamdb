@@ -1,14 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.utils import timezone
 
 from users.constants import (
-    MAX_NAME_LENGTH,
-    MIN_YEAR, MIN_SCORE,
-    MAX_SCORE,
-    TEXT_PREVIEW_LENGTH
+    MAX_NAME_LENGTH, MAX_SCORE, MIN_SCORE, TEXT_PREVIEW_LENGTH
 )
+from reviews.validators import validate_year
 
 User = get_user_model()
 
@@ -36,7 +33,6 @@ class Genre(NameSlugModel):
     class Meta(NameSlugModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ('name',)
 
 
 class Category(NameSlugModel):
@@ -45,7 +41,6 @@ class Category(NameSlugModel):
     class Meta(NameSlugModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ('name',)
 
 
 class Title(models.Model):
@@ -56,10 +51,7 @@ class Title(models.Model):
     )
     year = models.SmallIntegerField(
         verbose_name='Год создания',
-        validators=(
-            MinValueValidator(MIN_YEAR),
-            MaxValueValidator(timezone.now().year)
-        )
+        validators=(validate_year,)
     )
     description = models.TextField(verbose_name='Описание', blank=True)
     genre = models.ManyToManyField(
@@ -120,7 +112,7 @@ class Review(BaseReviewCommentModel):
         verbose_name='Произведение'
     )
 
-    class Meta:
+    class Meta(BaseReviewCommentModel.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -130,20 +122,18 @@ class Review(BaseReviewCommentModel):
             )
         ]
         default_related_name = 'reviews'
-        ordering = ('pub_date',)
 
 
 class Comment(BaseReviewCommentModel):
     """Модель комментария к отзыву."""
 
     review = models.ForeignKey(
-        'Review',
+        Review,
         on_delete=models.CASCADE,
         verbose_name='Отзыв'
     )
 
-    class Meta:
+    class Meta(BaseReviewCommentModel.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
-        ordering = ('pub_date',)

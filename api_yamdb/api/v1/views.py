@@ -52,7 +52,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')
     ).order_by('name')
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = TitleFilter
     pagination_class = PageNumberPagination
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -102,7 +102,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_review(self):
         """Получаем отзыв для комментария."""
         review_id = self.kwargs.get('review_id')
-        return get_object_or_404(Review, id=review_id)
+        title_id = self.kwargs.get('title_id')
+        return get_object_or_404(Review, id=review_id, title__id=title_id)
 
     def get_queryset(self):
         """Получение queryset для комментариев конкретного отзыва."""

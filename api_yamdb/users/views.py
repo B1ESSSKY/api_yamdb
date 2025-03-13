@@ -73,8 +73,7 @@ class UserSignUp(APIView):
     def post(self, request):
         serializer = UserCreationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        user = User.objects.get(**serializer.validated_data)
+        user = serializer.save()
         confirmation_code = default_token_generator.make_token(user)
         data = {
             'subject': 'Код подтверждения',
