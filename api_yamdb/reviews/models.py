@@ -36,7 +36,6 @@ class Genre(NameSlugModel):
     class Meta(NameSlugModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ('name',)
 
 
 class Category(NameSlugModel):
@@ -45,7 +44,6 @@ class Category(NameSlugModel):
     class Meta(NameSlugModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ('name',)
 
 
 class Title(models.Model):
@@ -120,7 +118,7 @@ class Review(BaseReviewCommentModel):
         verbose_name='Произведение'
     )
 
-    class Meta:
+    class Meta(BaseReviewCommentModel.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         constraints = [
@@ -130,20 +128,18 @@ class Review(BaseReviewCommentModel):
             )
         ]
         default_related_name = 'reviews'
-        ordering = ('pub_date',)
 
 
 class Comment(BaseReviewCommentModel):
     """Модель комментария к отзыву."""
 
     review = models.ForeignKey(
-        'Review',
+        Review,
         on_delete=models.CASCADE,
         verbose_name='Отзыв'
     )
 
-    class Meta:
+    class Meta(BaseReviewCommentModel.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
-        ordering = ('pub_date',)
