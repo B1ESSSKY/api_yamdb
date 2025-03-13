@@ -1,11 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.utils import timezone
 
 from users.constants import (
-    MAX_NAME_LENGTH, MAX_SCORE, MIN_SCORE, MIN_YEAR, TEXT_PREVIEW_LENGTH
+    MAX_NAME_LENGTH, MAX_SCORE, MIN_SCORE, TEXT_PREVIEW_LENGTH
 )
+from reviews.validators import validate_year
 
 User = get_user_model()
 
@@ -51,10 +51,7 @@ class Title(models.Model):
     )
     year = models.SmallIntegerField(
         verbose_name='Год создания',
-        validators=(
-            MinValueValidator(MIN_YEAR),
-            MaxValueValidator(timezone.now().year)
-        )
+        validators=(validate_year,)
     )
     description = models.TextField(verbose_name='Описание', blank=True)
     genre = models.ManyToManyField(
